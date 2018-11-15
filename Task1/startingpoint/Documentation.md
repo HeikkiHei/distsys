@@ -1,6 +1,6 @@
 ### Group
-Mikko Rinta-Homi
-Heikki Ahonen
+Mikko Rinta-Homi, 
+Heikki Ahonen, 
 Outi Jussila
 
 ## Implementation
