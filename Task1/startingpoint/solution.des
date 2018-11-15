@@ -138,13 +138,12 @@ TRANSITION:
     C: [INSTATE("Refresh.Chrono")]
     E: initChrono
 
-### WHY THIS DOES NOT WORK?
 TRANSITION:
     S: Chrono.Off
     N: Chrono.Off
     C: [INSTATE("Refresh.Chrono")]
     E: resetChrono
-    O:  g.resetChrono
+    O:  g.resetChrono()
 
 # Editing
 TRANSITION:

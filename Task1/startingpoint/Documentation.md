@@ -43,10 +43,11 @@ In our solution, we have implemented functions for
 - Changing display to Chrono and back
 - Chrono advancement
 - Chrono stop
+- Chrono reset
 - Changind display to Alarm and back
 
 Features yet to be implemented are
-- Ajustement of time
+- Ajustement of time and date
 - Adjustement of alarm
 - Alarm going off
 
