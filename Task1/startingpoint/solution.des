@@ -1,0 +1,241 @@
+INITIALIZER:
+    from Tkinter import *
+    from DWatchGUI import *
+    
+    root = Tk()
+    root.title("This is my kello")
+    g = DWatchGUI(root, eventhandler)
+    
+    eventhandler.start()
+    
+    root.mainloop()
+
+STATECHART:
+    Time [CS] [DS]
+        Tick [DS]
+        Stop
+    Refresh [CS] [DS]
+        Time [DS]
+        Chrono
+        Alarm
+    Light [CS] [DS]
+        On
+        AlmostOff
+        Off [DS]
+    Chrono [CS] [DS]
+        Off [DS]
+        On
+    EditTime [CS] [DS]
+        Off [DS]
+        OffDelay
+        On
+        OnDelay
+    Alarm
+        Off [DS]
+        OffDelay
+        On
+        OnDelay
+        
+
+
+
+# Clock
+TRANSITION:
+    S: Time.Tick
+    N: Time.Tick
+    T: 1
+    O: g.increaseTimeByOne()
+
+TRANSITION:
+    S: Time.Tick
+    N: Time.Stop
+    E: editTimeEvent
+
+TRANSITION:
+    S: Time.Stop
+    N: Time.Tick
+    E: editTimeEvent
+
+# Light
+TRANSITION:
+    S: Light.Off
+    N: Light.On
+    E: lightOn
+    O: g.setIndiglo()
+
+TRANSITION:
+    S: Light.On
+    N: Light.AlmostOff
+    E: lightOff
+    O: print "lightoff event"
+
+TRANSITION:
+    S: Light.AlmostOff
+    N: Light.Off
+    T: 2 [OTT]
+    O: g.unsetIndiglo()
+
+# Screen refreshing
+TRANSITION:
+    S: Refresh.Time
+    N: Refresh.Time
+    T: 0.05
+    O: g.refreshTimeDisplay()
+
+TRANSITION:
+    S: Refresh.Chrono
+    N: Refresh.Chrono
+    T: 0.05
+    O: g.refreshChronoDisplay()
+
+TRANSITION:
+    S: Refresh.Alarm
+    N: Refresh.Alarm
+    T: 0.05
+    O: g.refreshAlarmDisplay()
+
+TRANSITION:
+    S: Refresh.Time
+    N: Refresh.Chrono
+    E: changeMode
+    O:  g.refreshChronoDisplay()
+
+TRANSITION:
+    S: Refresh.Chrono
+    N: Refresh.Time
+    E: changeMode
+    O:  g.refreshTimeDisplay()
+
+TRANSITION:
+    S: Refresh.Time
+    N: Refresh.Alarm
+    E: alarmModeChange
+    O:  g.refreshAlarmDisplay()
+        print "Alarm mode"
+
+TRANSITION:
+    S: Refresh.Alarm
+    N: Refresh.Time
+    E: alarmModeChange
+    O:  g.refreshTimeDisplay()
+
+# Chrono
+TRANSITION:
+    S: Chrono.Off
+    N: Chrono.On
+    C: [INSTATE("Refresh.Chrono")]
+    E: initChrono
+
+TRANSITION:
+    S: Chrono.On
+    N: Chrono.On
+    T: 0.25
+    O:  g.increaseChronoByOne()
+
+TRANSITION:
+    S: Chrono.On
+    N: Chrono.Off
+    C: [INSTATE("Refresh.Chrono")]
+    E: initChrono
+
+### WHY THIS DOES NOT WORK?
+TRANSITION:
+    S: Chrono.Off
+    N: Chrono.Off
+    C: [INSTATE("Refresh.Chrono")]
+    E: resetChrono
+    O:  g.resetChrono
+
+# Editing
+TRANSITION:
+    S: EditTime.Off
+    C: [INSTATE("Refresh.Time")]
+    N: EditTime.OnDelay
+    E: editTime
+
+TRANSITION:
+    S: EditTime.OnDelay
+    N: EditTime.On
+    T: 1.5
+    O:  [EVENT("editTimeEvent")]
+        print "editTimeEvent"
+
+TRANSITION:
+    S: EditTime.OnDelay
+    C: [INSTATE("Refresh.Time")]
+    N: EditTime.Off
+    E: released
+
+TRANSITION:
+    S: EditTime.On
+    N: EditTime.On
+    E: editTime
+    O: g.selectNext
+
+TRANSITION:
+    S: EditTime.On
+    N: EditTime.On
+    E: increase
+    O: g.increaseSelection
+
+TRANSITION:
+    S: EditTime.On
+    C: [INSTATE("Refresh.Time")]
+    N: EditTime.OffDelay
+    E: editTime
+
+TRANSITION:
+    S: EditTime.OffDelay
+    N: EditTime.Off
+    T: 2
+    O:  [EVENT("editTimeEvent")]
+        print "editTimeEvent"
+    
+TRANSITION:
+    S: EditTime.OffDelay
+    C: [INSTATE("Refresh.Time")]
+    N: EditTime.On
+    E: released
+
+# Alarm
+TRANSITION:
+    S: Alarm.Off
+    N: Alarm.OnDelay
+    O:  [INSTATE("Refresh.Time")]
+        [INSTATE("Refresh.Alarm")]
+    E: setAlarm
+
+TRANSITION:
+    S: Alarm.OnDelay
+    N: Alarm.On
+    T: 1.5
+
+TRANSITION:
+    S: Alarm.OnDelay
+    C: [INSTATE("Refresh.Alarm")]
+    N: Alarm.Off
+    E: onoff
+    O: [EVENT("alarmModeChange")]
+
+TRANSITION:
+    S: Alarm.On
+    C: [INSTATE("Refresh.Alarm")]
+    N: Alarm.On
+    E: increase
+    O: g.increaseSelection
+
+TRANSITION:
+    S: Alarm.On
+    N: Alarm.OffDelay
+    E: finishEdit
+
+TRANSITION:
+    S: Alarm.OffDelay
+    N: Alarm.Off
+    T: 2
+    
+TRANSITION:
+    S: Alarm.OffDelay
+    N: Alarm.On
+    E: released
+    O: [EVENT("alarmModeChange")]

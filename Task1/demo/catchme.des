@@ -1,0 +1,42 @@
+INITIALIZER:
+    from Tkinter import *
+    from DigitalWatch import *
+    
+    root = Tk()
+    root.title("This is my kello")
+    g = DigitalWatchGUI(root, eventhandler)
+    
+    eventhandler.start()
+    
+    root.mainloop()
+
+STATECHART:
+    A [DS]
+    B
+    C
+
+TRANSITION:
+    S: A
+    N: B
+    E: on
+    O: print "A -> B"
+       g.setLightBulbOn()
+
+TRANSITION:
+    S: B
+    N: B
+    E: on
+    O: print "B (self-loop)"
+
+TRANSITION:
+    S: B
+    N: A
+    E: off
+    O: print "B -> A"
+       g.setLightBulbOff()
+
+TRANSITION:
+    S: A
+    N: A
+    E: off
+    O: print "A (self-loop)"
